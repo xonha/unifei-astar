@@ -207,40 +207,7 @@ typedef struct {
   int y;
 } Posicao;
 
-// int caminhavel(char **Tabuleiro, No **matriz, Posicao posicao, int n) {
-//   // se x ou y forem negativos ou maior/igual a n, nao sao validos
-//   if (posicao.x < 0 || posicao.x >= n || posicao.y < 0 || posicao.y >= n)
-//     return 0;
-
-//   // se a posicao estiver na matriz fechada, nao eh caminhavel
-//   if (matriz[posicao.x][posicao.y].f != -1) return 0;
-
-//   if (Tabuleiro[posicao.x][posicao.y] == '0')
-//     return 1;
-//   else
-//     return 0;
-// }
-
-// void *encontra_visinhos(char **T, Posicao no_atual, int n, char *vizinhos) {
-//   // resetar vizinhos com I de invalido
-//   for (int i = 0; i < 8; i++) {
-//     vizinhos[i] = 'I';
-//   }
-
-//   int x = no_atual.x;
-//   int y = no_atual.y;
-
-//   vizinhos[0] = T[x - 1][y - 1];
-//   vizinhos[1] = T[x - 1][y];
-//   vizinhos[2] = T[x - 1][y + 1];
-//   vizinhos[3] = T[x][y - 1];
-//   vizinhos[4] = T[x][y + 1];
-//   vizinhos[5] = T[x + 1][y - 1];
-//   vizinhos[6] = T[x + 1][y];
-//   vizinhos[7] = T[x + 1][y + 1];
-// }
-
-void encontra_visinhos(char **T, Posicao no_atual, int n, char *vizinhos) {
+void encontra_vizinhos_diagonal(char **T, Posicao no_atual, int n, char *vizinhos) {
   // Resetar vizinhos com I de inválido
   for (int i = 0; i < 8; i++) {
     vizinhos[i] = 'I';
@@ -285,16 +252,15 @@ void reescreve_tabuleiro(int n, int T_int[n][n], char **T_char) {
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
       char ponto = T_char[i][j];
-      // F = 70 - Fonte, T = 84 - Torre
-      if (ponto == 70) {
+      if (ponto == 70) {  // F - Fonte
         T_int[i][j] = 70;
         continue;
       }
-      if (ponto == 84) {
+      if (ponto == 84) {  // T - Torre
         T_int[i][j] = 84;
         continue;
       }
-      encontra_visinhos(T_char, (Posicao){i, j}, n, vizinhos);
+      encontra_vizinhos_diagonal(T_char, (Posicao){i, j}, n, vizinhos);
       T_int[i][j] = calcula_dano(T_char, n, i, j) / 10;
     }
   }
@@ -315,7 +281,8 @@ int encontra_caminho_exato(char **T_char, int n, char *caminho) {
 
   int T_int[n][n];
   reescreve_tabuleiro(n, T_int, T_char);
-  imprime_tabuleiro_int(n, T_int);
+  // imprime_tabuleiro_int(n, T_int);
+
 
   return tamanho_caminho;
 }

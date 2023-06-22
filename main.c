@@ -280,35 +280,7 @@ void encontra_visinhos(char **T, Posicao no_atual, int n, char *vizinhos) {
   }
 }
 
-int calcula_pontos(char *vizinhos) {
-  int pontos = 0;
-  for (int i = 0; i < 8; i++) {
-    if (vizinhos[i] == 73) continue;     // I - Invalido
-    if (vizinhos[i] == 70) pontos += 1;  // F - Fonte
-    if (vizinhos[i] == 84) pontos -= 1;  // T - Torre
-  }
-  if (pontos < 0)
-    return abs(pontos) + 97;
-  else if (pontos > 0) {
-    return pontos + 48;
-  } else
-    return 48;
-}
-
-void reescrever_tabuleiro(char **tabuleiro, int n) {
-  char vizinhos[8];
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < n; j++) {
-      char ponto = tabuleiro[i][j];
-      if (ponto == 70 || ponto == 84) continue;  // F - Fonte, T - Torre
-      encontra_visinhos(tabuleiro, (Posicao){i, j}, n, vizinhos);
-      int p = calcula_pontos(vizinhos) / 10;
-      tabuleiro[i][j] = p;
-    }
-  }
-}
-
-void re_tabuleiro(int n, int T_int[n][n], char **T_char) {
+void reescreve_tabuleiro(int n, int T_int[n][n], char **T_char) {
   char vizinhos[8];
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
@@ -328,25 +300,22 @@ void re_tabuleiro(int n, int T_int[n][n], char **T_char) {
   }
 }
 
+void imprime_tabuleiro_int(int n, int tabuleiro[n][n]) {
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
+      printf("%d ", tabuleiro[j][i]);
+    }
+    printf("\n");
+  }
+}
+
 int encontra_caminho_exato(char **T_char, int n, char *caminho) {
   int tamanho_caminho = 0;
   int dano = 0;
 
   int T_int[n][n];
-  re_tabuleiro(n, T_int, T_char);
-  // imprimir matriz T_int
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < n; j++) {
-      printf("%d ", T_int[j][i]);
-    }
-    printf("\n");
-  }
-
-  char **NovoT = copia_tabuleiro(T_char, n);
-  imprime_tabuleiro(NovoT, n);
-  reescrever_tabuleiro(NovoT, n);
-
-  imprime_tabuleiro(NovoT, n);
+  reescreve_tabuleiro(n, T_int, T_char);
+  imprime_tabuleiro_int(n, T_int);
 
   return tamanho_caminho;
 }

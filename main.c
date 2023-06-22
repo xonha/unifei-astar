@@ -213,7 +213,7 @@ typedef struct no {
   struct no *parente;
 } No;
 
-No REINICIAR_NO = {-1, -1, (Posicao){-1, -1}, NULL};
+No REINICIAR_NO = {-1, -1, {-1, -1}, NULL};
 
 void imprime_matriz(No **matriz, int n) {
   for (int i = 0; i < n; i++) {
@@ -365,7 +365,6 @@ int preenche_caminho(char *caminho, No **lista_fechada, No atual, int n) {
   int x = atual.posicao.x;
   int y = atual.posicao.y;
   int tamanho = 0;
-  char *caminho_atual;
   while (x != 0 || y != 0) {
     caminho[tamanho++] = direcao(atual.posicao, atual.parente->posicao);
     atual = *atual.parente;
@@ -377,7 +376,6 @@ int preenche_caminho(char *caminho, No **lista_fechada, No atual, int n) {
 }
 
 int encontra_caminho_exato(char **Tabuleiro, int n, char *caminho) {
-  int tamanho = 0;
   Posicao vizinhos[4];
 
   No **lista_aberta = malloc(n * sizeof(No *));
@@ -399,10 +397,6 @@ int encontra_caminho_exato(char **Tabuleiro, int n, char *caminho) {
 
   while (1) {
     Posicao menor = encontrar_menor_f(lista_aberta, n);
-    // printf("Matriz aberta:\n");
-    // imprime_matriz(lista_aberta, n);
-    // printf("Matriz fechada:\n");
-    // imprime_matriz(lista_fechada, n);
 
     atual = lista_aberta[menor.x][menor.y];
     lista_aberta[menor.x][menor.y] = REINICIAR_NO;
@@ -416,14 +410,7 @@ int encontra_caminho_exato(char **Tabuleiro, int n, char *caminho) {
       if (x == -1 || y == -1) continue;
       if (proximo.posicao.x == n - 1 && proximo.posicao.y == n - 1) {
         return preenche_caminho(caminho, lista_fechada, proximo, n);
-        // Recriar caminho
-        // return tamanho;
-        // printf("Achou\n");
       }
-      // printf("Matriz aberta:\n");
-      // imprime_matriz(lista_aberta, n);
-      // printf("Matriz fechada:\n");
-      // imprime_matriz(lista_fechada, n);
 
       int h = distancia_manhattan(vizinhos[i], (Posicao){n - 1, n - 1});
       proximo.g = atual.g + 1;
@@ -439,24 +426,14 @@ int encontra_caminho_exato(char **Tabuleiro, int n, char *caminho) {
 
       if (lista_aberta[x][y].f != -1 && lista_aberta[x][y].f > proximo.f) {
         lista_aberta[x][y] = proximo;
-        // printf("Matriz aberta:\n");
-        // imprime_matriz(lista_aberta, n);
         continue;
       }
       lista_aberta[x][y] = proximo;
-      // printf("Matriz aberta:\n");
-      // imprime_matriz(lista_aberta, n);
     }
 
     // push Current on the CLOSED list
     lista_fechada[menor.x][menor.y] = atual;
-    // printf("Matriz Fechada\n");
-    // imprime_matriz(lista_fechada, n);
-
-    // printf("Alocou\n");
   }
-
-  return tamanho;
 }
 
 // ################# FIM SOLVER ########################

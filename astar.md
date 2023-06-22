@@ -1,3 +1,12 @@
+5
+0F0T0
+0F000
+0F000
+000T0
+000T0
+
+
+
 // A* Search Algorithm
 1.  Initialize the open list
 

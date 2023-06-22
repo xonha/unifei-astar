@@ -206,35 +206,67 @@ typedef struct {
   int x;
   int y;
 } Posicao;
-
 typedef struct no {
-  Posicao posicao;
-  int g;
-  int h;
   int f;
-  struct no *pai;
+  int g;
+  Posicao posicao;
+  struct no *parente;
 } No;
 
-No no_padrao = {{-1, -1}, -1, -1, -1, NULL};
+No REINICIAR_NO = {-1, -1, (Posicao){-1, -1}, NULL};
 
+void imprime_matriz(No **matriz, int n) {
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
+      if (matriz[j][i].f != -1) {
+        // printar coordenadas
+        printf("(%d,%d) ", j, i);
+      } else {
+        printf(" # ");  // Espaço vazio para valores f = -1
+      }
+    }
+    printf("\n");
+  }
+  printf("\n");
+}
 int distancia_manhattan(Posicao a, Posicao b) {
   return abs(a.x - b.x) + abs(a.y - b.y);
 }
 
-int caminhavel(char **Tabuleiro, int x, int y, int n, No *lista_fechada) {
+int caminhavel(char **Tabuleiro, No **matriz, Posicao posicao, int n) {
   // se x ou y forem negativos ou maior/igual a n, nao sao validos
-  if (x < 0 || x >= n || y < 0 || y >= n) return 0;
+  if (posicao.x < 0 || posicao.x >= n || posicao.y < 0 || posicao.y >= n)
+    return 0;
 
-  // se a posicao estiver na lista fechada, nao eh caminhavel
-  for (int i = 0; i < n * n; i++) {
-    if (lista_fechada[i].posicao.x == x && lista_fechada[i].posicao.y == y)
-      return 0;
-  }
+  // se a posicao estiver na matriz fechada, nao eh caminhavel
+  if (matriz[posicao.x][posicao.y].f != -1) return 0;
 
-  if (Tabuleiro[x][y] == '0')
+  if (Tabuleiro[posicao.x][posicao.y] == '0')
     return 1;
   else
     return 0;
+}
+
+void encontra_vizinhos(char **Tabuleiro, Posicao *vizinhos, Posicao posicao,
+                       No **matriz, int n) {
+  int x = posicao.x;
+  int y = posicao.y;
+
+  for (int i = 0; i < 4; i++) {
+    vizinhos[i] = (Posicao){-1, -1};
+  }
+
+  if (caminhavel(Tabuleiro, matriz, (Posicao){x - 1, y}, n))
+    vizinhos[0] = (Posicao){x - 1, y};
+
+  if (caminhavel(Tabuleiro, matriz, (Posicao){x, y - 1}, n))
+    vizinhos[1] = (Posicao){x, y - 1};
+
+  if (caminhavel(Tabuleiro, matriz, (Posicao){x + 1, y}, n))
+    vizinhos[2] = (Posicao){x + 1, y};
+
+  if (caminhavel(Tabuleiro, matriz, (Posicao){x, y + 1}, n))
+    vizinhos[3] = (Posicao){x, y + 1};
 }
 
 int compara_f(const void *a, const void *b) {
@@ -258,8 +290,6 @@ int compara_f(const void *a, const void *b) {
     return 0;
 }
 
-int mesma_posicao(Posicao a, Posicao b) { return a.x == b.x && a.y == b.y; }
-
 int encontra_menor_f_indice(No *lista_aberta, int n) {
   int menor = 0;
   for (int i = 0; i < n; i++) {
@@ -273,102 +303,157 @@ No encontra_menor_f_no(No *lista_aberta, int n) {
   return lista_aberta[encontra_menor_f_indice(lista_aberta, n)];
 }
 
-void encontra_vizinhos(char **Tabuleiro, No *vizinhos, No no_atual, int n,
-                       No *lista_fechada) {
-  int x = no_atual.posicao.x;
-  int y = no_atual.posicao.y;
+Posicao encontrar_menor_f(No **matriz, int n) {
+  Posicao menor = {-1, -1};  // Inicializar com valores inválidos
+  int menorF = INT_MAX;      // Inicializar com um valor grande
 
-  for (int i = 0; i < 4; i++) vizinhos[i] = no_padrao;
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
+      if (matriz[i][j].f >= 0 && matriz[i][j].f < menorF) {
+        menorF = matriz[i][j].f;
+        menor = (Posicao){i, j};
+      }
+    }
+  }
 
-  if (caminhavel(Tabuleiro, x + 1, y, n, lista_fechada))
-    vizinhos[0] = (No){{x + 1, y}, 0, 0, 0, &no_atual};
-
-  if (caminhavel(Tabuleiro, x, y - 1, n, lista_fechada))
-    vizinhos[1] = (No){{x, y - 1}, 0, 0, 0, &no_atual};
-
-  if (caminhavel(Tabuleiro, x - 1, y, n, lista_fechada))
-    vizinhos[2] = (No){{x - 1, y}, 0, 0, 0, &no_atual};
-
-  if (caminhavel(Tabuleiro, x, y + 1, n, lista_fechada))
-    vizinhos[3] = (No){{x, y + 1}, 0, 0, 0, &no_atual};
+  return menor;
 }
 
-void printa_lista(No *lista, int n) {
-  for (int i = 0; i < n; i++) {
-    printf("No %d: (%d, %d) g: %d h: %d f: %d\n", i, lista[i].posicao.x,
-           lista[i].posicao.y, lista[i].g, lista[i].h, lista[i].f);
+void preencher_parente_dos_vizinhos(Posicao *vizinhos, No **matriz, No atual) {
+  for (int i = 0; i < 4; i++) {
+    if (vizinhos[i].x == -1) continue;
+    matriz[vizinhos[i].x][vizinhos[i].y].parente = &atual;
   }
+}
+
+char direcao(Posicao atual, Posicao parente) {
+  if (atual.x == parente.x) {
+    if (atual.y < parente.y)
+      return 'N';
+    else
+      return 'S';
+  } else {
+    if (atual.x < parente.x)
+      return 'O';
+    else
+      return 'L';
+  }
+}
+
+void inverte_caminho(char *caminho) {
+  if (caminho == NULL) {
+    return;  // Verifica se o ponteiro é nulo para evitar erros
+  }
+
+  int tamanho = strlen(caminho);
+  int inicio = 0;
+  int fim = tamanho - 1;
+
+  while (inicio < fim) {
+    // Troca os caracteres
+    char temp = caminho[inicio];
+    caminho[inicio] = caminho[fim];
+    caminho[fim] = temp;
+
+    // Move os índices
+    inicio++;
+    fim--;
+  }
+}
+
+int preenche_caminho(char *caminho, No **lista_fechada, No atual, int n) {
+  int x = atual.posicao.x;
+  int y = atual.posicao.y;
+  int tamanho = 0;
+  char *caminho_atual;
+  while (x != 0 || y != 0) {
+    caminho[tamanho++] = direcao(atual.posicao, atual.parente->posicao);
+    atual = *atual.parente;
+    x = atual.posicao.x;
+    y = atual.posicao.y;
+  }
+  inverte_caminho(caminho);
+  return tamanho;
 }
 
 int encontra_caminho_exato(char **Tabuleiro, int n, char *caminho) {
   int tamanho = 0;
-  int n_lista = n * n;
+  Posicao vizinhos[4];
 
-  Posicao posicao_inicial = {0, 0};
-  Posicao posicao_final = {n - 1, n - 1};
-  No no_inicial = {posicao_inicial, 0, 0, 0, NULL};
-  No no_final = {posicao_final, 0, 0, 0, NULL};
+  No **lista_aberta = malloc(n * sizeof(No *));
+  No **lista_fechada = malloc(n * sizeof(No *));
 
-  No lista_aberta[n_lista];
-  No lista_fechada[n_lista];
-  No vizinhos[4];
-  No no_atual = no_padrao;
-  No no_sucessor = no_padrao;
-
-  // reseta a lista aberta e fechada
-  for (int i = 0; i < n_lista; i++) {
-    lista_aberta[i] = no_padrao;
-    lista_fechada[i] = no_padrao;
+  for (int i = 0; i < n; i++) {
+    lista_aberta[i] = malloc(n * sizeof(No));
+    lista_fechada[i] = malloc(n * sizeof(No));
+    for (int j = 0; j < n; j++) {
+      lista_aberta[i][j] = REINICIAR_NO;
+      lista_fechada[i][j] = REINICIAR_NO;
+    }
   }
 
-  lista_aberta[0] = no_inicial;
+  lista_aberta[0][0] = (No){0, 0, (Posicao){0, 0}, NULL};
 
-  for (int k = 0; k < n_lista; k++) {
-    qsort(lista_aberta, n_lista, sizeof(No), compara_f);
-    qsort(lista_fechada, n_lista, sizeof(No), compara_f);
+  No atual = REINICIAR_NO;
+  No proximo = REINICIAR_NO;
 
-    printf("\n\nLista ABERTA:\n");
-    printa_lista(lista_aberta, n_lista);
-    printf("\n\nLista FECHADA:\n");
-    printa_lista(lista_fechada, n_lista);
+  while (1) {
+    Posicao menor = encontrar_menor_f(lista_aberta, n);
+    // printf("Matriz aberta:\n");
+    // imprime_matriz(lista_aberta, n);
+    // printf("Matriz fechada:\n");
+    // imprime_matriz(lista_fechada, n);
 
-    no_atual = lista_aberta[0];
-    lista_aberta[0] = no_padrao;
-    encontra_vizinhos(Tabuleiro, vizinhos, no_atual, n, lista_fechada);
+    atual = lista_aberta[menor.x][menor.y];
+    lista_aberta[menor.x][menor.y] = REINICIAR_NO;
+
+    encontra_vizinhos(Tabuleiro, vizinhos, menor, lista_fechada, n);
+    preencher_parente_dos_vizinhos(vizinhos, lista_aberta, atual);
 
     for (int i = 0; i < 4; i++) {
-      no_sucessor = vizinhos[i];
-      if (no_sucessor.f == -1) continue;
-
-      if (mesma_posicao(no_sucessor.posicao, posicao_final)) {
-        printf("oi");
+      int x = vizinhos[i].x;
+      int y = vizinhos[i].y;
+      if (x == -1 || y == -1) continue;
+      if (proximo.posicao.x == n - 1 && proximo.posicao.y == n - 1) {
+        return preenche_caminho(caminho, lista_fechada, proximo, n);
+        // Recriar caminho
+        // return tamanho;
+        // printf("Achou\n");
       }
+      // printf("Matriz aberta:\n");
+      // imprime_matriz(lista_aberta, n);
+      // printf("Matriz fechada:\n");
+      // imprime_matriz(lista_fechada, n);
 
-      no_sucessor.g = no_atual.g + 1;
-      no_sucessor.h = distancia_manhattan(no_sucessor.posicao, posicao_final);
-      no_sucessor.f = no_sucessor.g + no_sucessor.h;
-      // no_sucessor.pai = &no_atual;
+      int h = distancia_manhattan(vizinhos[i], (Posicao){n - 1, n - 1});
+      proximo.g = atual.g + 1;
+      proximo.f = proximo.g + h;
+      proximo.posicao = vizinhos[i];
+      proximo.parente = &lista_fechada[menor.x][menor.y];
 
-      for (int j = 0; j < n; j++) {
-        if (lista_aberta[j].f == -1) {
-          lista_aberta[n_lista - 1] = no_sucessor;
-          break;
-        }
+      if (lista_fechada[x][y].f != -1 && lista_fechada[x][y].f < proximo.f)
+        continue;
 
-        else if (mesma_posicao(lista_fechada[j].posicao, no_sucessor.posicao) &&
-                 lista_fechada[j].f < no_sucessor.f)
-          break;
+      if (lista_aberta[x][y].f != -1 && lista_aberta[x][y].f < proximo.f)
+        continue;
 
-        else if (mesma_posicao(lista_aberta[j].posicao, no_sucessor.posicao)) {
-          if (lista_aberta[j].f > no_sucessor.f) {
-            lista_aberta[n_lista - 1] = no_sucessor;
-          }
-          break;
-        }
+      if (lista_aberta[x][y].f != -1 && lista_aberta[x][y].f > proximo.f) {
+        lista_aberta[x][y] = proximo;
+        // printf("Matriz aberta:\n");
+        // imprime_matriz(lista_aberta, n);
+        continue;
       }
+      lista_aberta[x][y] = proximo;
+      // printf("Matriz aberta:\n");
+      // imprime_matriz(lista_aberta, n);
     }
-    lista_fechada[n_lista - 1] = no_atual;
-    no_atual.pai = &lista_fechada[n_lista - 1];
+
+    // push Current on the CLOSED list
+    lista_fechada[menor.x][menor.y] = atual;
+    // printf("Matriz Fechada\n");
+    // imprime_matriz(lista_fechada, n);
+
+    // printf("Alocou\n");
   }
 
   return tamanho;
@@ -387,7 +472,7 @@ int main() {
   T = le_tabuleiro(&n);
   T_original = copia_tabuleiro(T, n);
 
-  // imprime_tabuleiro(T_original, n);
+  imprime_tabuleiro(T_original, n);
 
   // o caminho tera no maximo n*n de tamanho, por isso eh prealocado aqui
   char *caminho = (char *)malloc(n * n * sizeof(char));
@@ -396,10 +481,10 @@ int main() {
   //'N', 'S', 'L', 'O'
   int tamanho_caminho = encontra_caminho_exato(T, n, caminho);
 
-  // printf("tamanho_caminho = %d\n", tamanho_caminho);
-  // for(int i = 0; i < tamanho_caminho; i++){
-  //   printf("%c", caminho[i]);
-  // }
+  printf("tamanho_caminho = %d\n", tamanho_caminho);
+  for (int i = 0; i < tamanho_caminho; i++) {
+    printf("%c", caminho[i]);
+  }
 
   int res = 0;
   int dano = INT_MAX;
@@ -407,11 +492,11 @@ int main() {
   if (tamanho_caminho > 0 &&
       verifica_caminho(T_original, n, caminho, tamanho_caminho, &dano)) {
     printf("Tomou %d de dano! (quanto mais negativo melhor)\n", dano);
-    // desenha_caminho(T_original, n, caminho, tamanho_caminho);
+    desenha_caminho(T_original, n, caminho, tamanho_caminho);
     // imprime_tabuleiro(T_original, n);
   } else {
     printf("Algo errado no seu caminho!\n");
-    // desenha_caminho(T_original, n, caminho, tamanho_caminho);
+    desenha_caminho(T_original, n, caminho, tamanho_caminho);
     // imprime_tabuleiro(T_original, n);
     res = -1;
   }

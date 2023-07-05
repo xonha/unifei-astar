@@ -9,3 +9,7 @@
 6. Após explorar todos os vizinhos, retroceda para o nó anterior.
 7. Repita os passos 4 a 6 até explorar todos os caminhos possíveis.
 8. Se não houver mais nós para explorar ou alcançar o objetivo, retorne sem solução.
+
+1. X e Y =0
+2. Descobre filhos
+3. 

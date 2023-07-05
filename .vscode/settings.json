@@ -4,6 +4,7 @@
         "list": "c",
         "tabuleiro.h": "c",
         "stdlib.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "stdbool.h": "c"
     }
 }

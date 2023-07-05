@@ -370,10 +370,6 @@ void zera_visitados(int n, int visitados[n][n]) {
   }
 }
 
-// calcular a pontuação perfeita restante
-// para isso preciso da pontuação perfeita
-// e da pontuação negativa já consumida
-
 void dfs(int n, int **T_int, int visitados[n][n], Posicao caminho_atual[n * n],
          int x, int y, int indice_caminho, int score_perfeito,
          Posicao caminho_melhor[n * n], int *score_melhor) {
@@ -433,12 +429,8 @@ int encontra_caminho_exato(char **T_char, int n, char *caminho) {
   Posicao caminho_atual[n * n];
   Posicao caminho_melhor[n * n];
   int **T_int = (int **)malloc(n * sizeof(int *));
-  // int **visitados = (int **)malloc(n * sizeof(int *));
 
-  for (int i = 0; i < n; i++) {
-    T_int[i] = (int *)malloc(n * sizeof(int));
-    // visitados[i] = (int *)malloc(n * sizeof(int));
-  }
+  for (int i = 0; i < n; i++) T_int[i] = (int *)malloc(n * sizeof(int));
 
   reescreve_tabuleiro_inteiros(n, T_int, T_char);
   int visitados[n][n];

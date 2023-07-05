@@ -332,6 +332,20 @@ int calcula_score(int n, int **T_int, Posicao caminho_atual[n * n]) {
   return score;
 }
 
+int calcula_score_negativo(int n, int **T_int, Posicao caminho_atual[n * n]) {
+  int score = 0;
+  for (int i = 0; i < n * n; i++) {
+    if (caminho_atual[i].x == -1) {
+      break;
+    }
+    if (T_int[caminho_atual[i].x][caminho_atual[i].y] < 0) {
+      score += T_int[caminho_atual[i].x][caminho_atual[i].y];
+    }
+  }
+  if (T_int[0][0] < 0) score += T_int[0][0];
+  return score;
+}
+
 void printa_caminho(int n, Posicao caminho[n * n]) {
   for (int i = 0; i < n * n; i++) {
     if (caminho[i].x == -1) {
@@ -356,21 +370,26 @@ void zera_visitados(int n, int visitados[n][n]) {
   }
 }
 
+// calcular a pontuação perfeita restante
+// para isso preciso da pontuação perfeita
+// e da pontuação negativa já consumida
+
 void dfs(int n, int **T_int, int visitados[n][n], Posicao caminho_atual[n * n],
          int x, int y, int indice_caminho, int score_perfeito,
-         Posicao caminho_melhor[n * n], int *score_melhor) {
-  //
+         Posicao caminho_melhor[n * n], int score_melhor) {
   int score_atual = calcula_score(n, T_int, caminho_atual);
+  int score_negativo = calcula_score_negativo(n, T_int, caminho_atual);
+  int score_aux = score_perfeito - score_negativo;
 
-  if (score_atual > 0 && score_atual + score_perfeito > -3) {
+  if (score_atual + score_aux > score_melhor) {
     // printf("Score atual: %d\n", score_atual);
     // caminho_atual[indice_caminho] = (Posicao){-1, -1};
     return;
   }
 
-  if (x == n - 1 && y == n - 1) {       // Chegou no final
-    if (score_atual < *score_melhor) {  // Achou um caminho melhor
-      *score_melhor = score_atual;
+  if (x == n - 1 && y == n - 1) {      // Chegou no final
+    if (score_atual < score_melhor) {  // Achou um caminho melhor
+      score_melhor = score_atual;
 
       zera_caminho(n, caminho_melhor);
       for (int i = 0; i < n * n; i++)  // Atualiza o caminho melhor
@@ -380,19 +399,6 @@ void dfs(int n, int **T_int, int visitados[n][n], Posicao caminho_atual[n * n],
     // printf("Score atual: %d\n", score_atual);
     return;
   }
-
-  // // Aloca uma matriz auxiliar para marcar os visitados
-  // int **aux_visistado = malloc(n * sizeof(int *));
-  // for (int i = 0; i < n; i++) {
-  //   aux_visistado[i] = malloc(n * sizeof(int));
-  // }
-
-  // for (int i = 0; i < n; i++) {
-  //   for (int j = 0; j < n; j++) {
-  //     aux_visistado[i][j] = visitados[i][j];
-  //   }
-  // }
-  // // Fim da alocação
 
   int aux_visistado[n][n];
   for (int i = 0; i < n; i++) {
@@ -444,7 +450,7 @@ int encontra_caminho_exato(char **T_char, int n, char *caminho) {
   // imprime_tabuleiro_int(n, T_int);
 
   dfs(n, T_int, visitados, caminho_atual, 0, 0, 0, score_perfeito,
-      caminho_melhor, &score_melhor);
+      caminho_melhor, score_melhor);
 
   int melhor_score = calcula_score(n, T_int, caminho_melhor);
   printf("Melhor score: %d\n", melhor_score);

@@ -210,41 +210,25 @@ typedef struct {
 void encontra_vizinhos_diagonal(char **T, Posicao no_atual, int n,
                                 char *vizinhos) {
   // Resetar vizinhos com I de inválido
-  for (int i = 0; i < 8; i++) {
-    vizinhos[i] = 'I';
-  }
+  for (int i = 0; i < 8; i++) vizinhos[i] = 'I';
 
   int x = no_atual.x;
   int y = no_atual.y;
 
   // Verificar os vizinhos em cima
   if (x - 1 >= 0) {
-    if (y - 1 >= 0) {
-      vizinhos[0] = T[x - 1][y - 1];
-    }
     vizinhos[3] = T[x - 1][y];
-    if (y + 1 < n) {
-      vizinhos[5] = T[x - 1][y + 1];
-    }
+    if (y - 1 >= 0) vizinhos[0] = T[x - 1][y - 1];
+    if (y + 1 < n) vizinhos[5] = T[x - 1][y + 1];
   }
-
   // Verificar vizinhos na mesma linha
-  if (y - 1 >= 0) {
-    vizinhos[1] = T[x][y - 1];
-  }
-  if (y + 1 < n) {
-    vizinhos[6] = T[x][y + 1];
-  }
-
+  if (y - 1 >= 0) vizinhos[1] = T[x][y - 1];
+  if (y + 1 < n) vizinhos[6] = T[x][y + 1];
   // Verificar vizinhos abaixo
   if (x + 1 < n) {
-    if (y - 1 >= 0) {
-      vizinhos[2] = T[x + 1][y - 1];
-    }
     vizinhos[4] = T[x + 1][y];
-    if (y + 1 < n) {
-      vizinhos[7] = T[x + 1][y + 1];
-    }
+    if (y - 1 >= 0) vizinhos[2] = T[x + 1][y - 1];
+    if (y + 1 < n) vizinhos[7] = T[x + 1][y + 1];
   }
 }
 

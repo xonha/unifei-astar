@@ -360,6 +360,36 @@ void zera_visitados(int n, int visitados[n][n]) {
   }
 }
 
+int monta_caminho(int n, char *caminho, Posicao caminho_melhor[n * n]) {
+  if (caminho_melhor[0].x == 1)
+    caminho[0] = 'L';
+  else if (caminho_melhor[0].x == 0)
+    caminho[0] = 'S';
+
+  for (int atual = 0; atual < n * n; atual++) {
+    int proximo = atual + 1;
+
+    if (caminho_melhor[atual].x == -1) return atual;
+
+    if (caminho_melhor[atual].x == caminho_melhor[proximo].x &&
+        caminho_melhor[atual].y < caminho_melhor[proximo].y)
+      caminho[proximo] = 'S';
+
+    if (caminho_melhor[atual].x == caminho_melhor[proximo].x &&
+        caminho_melhor[atual].y > caminho_melhor[proximo].y)
+      caminho[proximo] = 'N';
+
+    if (caminho_melhor[atual].y == caminho_melhor[proximo].y &&
+        caminho_melhor[atual].x < caminho_melhor[proximo].x)
+      caminho[proximo] = 'L';
+
+    if (caminho_melhor[atual].y == caminho_melhor[proximo].y &&
+        caminho_melhor[atual].x > caminho_melhor[proximo].x)
+      caminho[proximo] = 'O';
+  }
+  return 0;
+}
+
 void dfs(int n, int **T_int, int visitados[n][n], Posicao caminho_atual[n * n],
          int x, int y, int indice_caminho, int score_perfeito,
          Posicao caminho_melhor[n * n], int *score_melhor) {
@@ -401,36 +431,6 @@ void dfs(int n, int **T_int, int visitados[n][n], Posicao caminho_atual[n * n],
         indice_caminho + 1, score_perfeito, caminho_melhor, score_melhor);
   }
   caminho_atual[indice_caminho] = (Posicao){-1, -1};
-}
-
-int monta_caminho(int n, char *caminho, Posicao caminho_melhor[n * n]) {
-  if (caminho_melhor[0].x == 1)
-    caminho[0] = 'L';
-  else if (caminho_melhor[0].x == 0)
-    caminho[0] = 'S';
-
-  for (int atual = 0; atual < n * n; atual++) {
-    int proximo = atual + 1;
-
-    if (caminho_melhor[atual].x == -1) return atual;
-
-    if (caminho_melhor[atual].x == caminho_melhor[proximo].x &&
-        caminho_melhor[atual].y < caminho_melhor[proximo].y)
-      caminho[proximo] = 'S';
-
-    if (caminho_melhor[atual].x == caminho_melhor[proximo].x &&
-        caminho_melhor[atual].y > caminho_melhor[proximo].y)
-      caminho[proximo] = 'N';
-
-    if (caminho_melhor[atual].y == caminho_melhor[proximo].y &&
-        caminho_melhor[atual].x < caminho_melhor[proximo].x)
-      caminho[proximo] = 'L';
-
-    if (caminho_melhor[atual].y == caminho_melhor[proximo].y &&
-        caminho_melhor[atual].x > caminho_melhor[proximo].x)
-      caminho[proximo] = 'O';
-  }
-  return 0;
 }
 
 int encontra_caminho_exato(char **T_char, int n, char *caminho) {

@@ -105,22 +105,18 @@ void monta_tabuleiro_inteiros(int n, int **T_int, char **T_char) {
 
 void imprime_tabuleiro_int(int n, int **tabuleiro) {
   for (int i = 0; i < n; i++) {
-    for (int j = 0; j < n; j++) {
-      printf("%d ", tabuleiro[j][i]);
-    }
+    for (int j = 0; j < n; j++) printf("%d ", tabuleiro[j][i]);
     printf("\n");
   }
 }
 
 int encontra_pontuacao_perfeita(int n, int **T_int) {
   int pontos = 0;
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < n; j++) {
-      if (T_int[i][j] < 0) {
-        pontos += T_int[i][j];
-      }
-    }
-  }
+
+  for (int i = 0; i < n; i++)
+    for (int j = 0; j < n; j++)
+      if (T_int[i][j] < 0) pontos += T_int[i][j];
+
   return pontos;
 }
 
@@ -130,10 +126,10 @@ void reseta_vizinhos(Posicao vizinhos[3]) {
 
 int calcula_score(int n, int **T_int, Posicao caminho_atual[n * n]) {
   int score = 0;
+
   for (int i = 0; i < n * n; i++) {
-    if (caminho_atual[i].x == -1) {
-      break;
-    }
+    if (caminho_atual[i].x == -1) break;
+
     score += T_int[caminho_atual[i].x][caminho_atual[i].y];
   }
   score += T_int[0][0];
@@ -142,14 +138,14 @@ int calcula_score(int n, int **T_int, Posicao caminho_atual[n * n]) {
 
 int calcula_score_negativo(int n, int **T_int, Posicao caminho_atual[n * n]) {
   int score = 0;
+
   for (int i = 0; i < n * n; i++) {
-    if (caminho_atual[i].x == -1) {
-      break;
-    }
-    if (T_int[caminho_atual[i].x][caminho_atual[i].y] < 0) {
+    if (caminho_atual[i].x == -1) break;
+
+    if (T_int[caminho_atual[i].x][caminho_atual[i].y] < 0)
       score += T_int[caminho_atual[i].x][caminho_atual[i].y];
-    }
   }
+
   if (T_int[0][0] < 0) score += T_int[0][0];
   return score;
 }
@@ -163,17 +159,12 @@ void printa_caminho(int n, Posicao caminho[n * n]) {
 }
 
 void zera_caminho(int n, Posicao caminho_atual[n * n]) {
-  for (int i = 0; i < n * n; i++) {
-    caminho_atual[i] = (Posicao){-1, -1};
-  }
+  for (int i = 0; i < n * n; i++) caminho_atual[i] = (Posicao){-1, -1};
 }
 
 void zera_visitados(int n, int visitados[n][n]) {
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < n; j++) {
-      visitados[i][j] = 0;
-    }
-  }
+  for (int i = 0; i < n; i++)
+    for (int j = 0; j < n; j++) visitados[i][j] = 0;
 }
 
 int monta_caminho(int n, char *caminho, Posicao caminho_melhor[n * n]) {

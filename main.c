@@ -207,12 +207,6 @@ typedef struct {
   int y;
 } Posicao;
 
-typedef struct no {
-  int x;
-  int y;
-  struct no *proximo;
-} No;
-
 void encontra_vizinhos_diagonal(char **T, Posicao no_atual, int n,
                                 char *vizinhos) {
   // Resetar vizinhos com I de inválido
@@ -383,7 +377,9 @@ void dfs(int n, int **T_int, int visitados[n][n], Posicao caminho_atual[n * n],
     return;
   }
 
-  if (x == n - 1 && y == n - 1) {       // Chegou no final
+  if (x == n - 1 && y == n - 1) {  // Chegou no final
+    // printa_caminho(n, caminho_atual);
+    // printf("Score atual: %d\n", score_atual);
     if (score_atual < *score_melhor) {  // Achou um caminho melhor
       *score_melhor = score_atual;
 
@@ -391,8 +387,6 @@ void dfs(int n, int **T_int, int visitados[n][n], Posicao caminho_atual[n * n],
       for (int i = 0; i < n * n; i++)  // Atualiza o caminho melhor
         caminho_melhor[i] = caminho_atual[i];
     }
-    // printa_caminho(n, caminho_atual);
-    // printf("Score atual: %d\n", score_atual);
     return;
   }
 
@@ -410,7 +404,7 @@ void dfs(int n, int **T_int, int visitados[n][n], Posicao caminho_atual[n * n],
   aux_visistado[x][y] = 1;
 
   for (int i = 0; i < 3; i++) {
-    if (vizinhos[i].x == 0 && vizinhos[i].y == 0 ||  // Se vizinho invalido
+    if ((vizinhos[i].x == 0 && vizinhos[i].y == 0) ||  // Se vizinho invalido
         aux_visistado[vizinhos[i].x][vizinhos[i].y] == 1) {  // Ou já visitado
       continue;
     }
@@ -419,6 +413,36 @@ void dfs(int n, int **T_int, int visitados[n][n], Posicao caminho_atual[n * n],
         indice_caminho + 1, score_perfeito, caminho_melhor, score_melhor);
   }
   caminho_atual[indice_caminho] = (Posicao){-1, -1};
+}
+
+int monta_caminho(int n, char *caminho, Posicao caminho_melhor[n * n]) {
+  if (caminho_melhor[0].x == 1)
+    caminho[0] = 'L';
+  else if (caminho_melhor[0].x == 0)
+    caminho[0] = 'S';
+
+  for (int atual = 0; atual < n * n; atual++) {
+    int proximo = atual + 1;
+
+    if (caminho_melhor[atual].x == -1) return atual;
+
+    if (caminho_melhor[atual].x == caminho_melhor[proximo].x &&
+        caminho_melhor[atual].y < caminho_melhor[proximo].y)
+      caminho[proximo] = 'S';
+
+    if (caminho_melhor[atual].x == caminho_melhor[proximo].x &&
+        caminho_melhor[atual].y > caminho_melhor[proximo].y)
+      caminho[proximo] = 'N';
+
+    if (caminho_melhor[atual].y == caminho_melhor[proximo].y &&
+        caminho_melhor[atual].x < caminho_melhor[proximo].x)
+      caminho[proximo] = 'L';
+
+    if (caminho_melhor[atual].y == caminho_melhor[proximo].y &&
+        caminho_melhor[atual].x > caminho_melhor[proximo].x)
+      caminho[proximo] = 'O';
+  }
+  return 0;
 }
 
 int encontra_caminho_exato(char **T_char, int n, char *caminho) {
@@ -444,8 +468,11 @@ int encontra_caminho_exato(char **T_char, int n, char *caminho) {
   dfs(n, T_int, visitados, caminho_atual, 0, 0, 0, score_perfeito,
       caminho_melhor, &score_melhor);
 
-  int melhor_score = calcula_score(n, T_int, caminho_melhor);
-  printf("Melhor score: %d\n", melhor_score);
+  // printa_caminho(n, caminho_melhor);
+
+  tamanho_caminho = monta_caminho(n, caminho, caminho_melhor);
+
+  // printf("Melhor score: %d\n", tamanho_caminho);
 
   return tamanho_caminho;
 }

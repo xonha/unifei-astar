@@ -268,7 +268,7 @@ void encontra_vizinhos(int n, int **T_int, int x, int y, Posicao vizinhos[3],
     vizinhos[indice_vizinho++] = (Posicao){x, y - 1};
 }
 
-void reescreve_tabuleiro_inteiros(int n, int **T_int, char **T_char) {
+void monta_tabuleiro_inteiros(int n, int **T_int, char **T_char) {
   char vizinhos[8];
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
@@ -296,7 +296,7 @@ void imprime_tabuleiro_int(int n, int **tabuleiro) {
   }
 }
 
-int encontra_menor_pontuacao(int n, int **T_int) {
+int encontra_pontuacao_perfeita(int n, int **T_int) {
   int pontos = 0;
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
@@ -309,9 +309,7 @@ int encontra_menor_pontuacao(int n, int **T_int) {
 }
 
 void reseta_vizinhos(Posicao vizinhos[3]) {
-  for (int i = 0; i < 3; i++) {
-    vizinhos[i] = (Posicao){0, 0};
-  }
+  for (int i = 0; i < 3; i++) vizinhos[i] = (Posicao){0, 0};
 }
 
 int calcula_score(int n, int **T_int, Posicao caminho_atual[n * n]) {
@@ -342,9 +340,7 @@ int calcula_score_negativo(int n, int **T_int, Posicao caminho_atual[n * n]) {
 
 void printa_caminho(int n, Posicao caminho[n * n]) {
   for (int i = 0; i < n * n; i++) {
-    if (caminho[i].x == -1) {
-      break;
-    }
+    if (caminho[i].x == -1) break;
     printf("(%d, %d) ", caminho[i].x, caminho[i].y);
   }
   printf("\n");
@@ -369,20 +365,13 @@ void dfs(int n, int **T_int, int visitados[n][n], Posicao caminho_atual[n * n],
          Posicao caminho_melhor[n * n], int *score_melhor) {
   int score_atual = calcula_score(n, T_int, caminho_atual);
   int score_negativo = calcula_score_negativo(n, T_int, caminho_atual);
-  int score_aux = score_perfeito - score_negativo;
+  int score_perfeito_restante = score_perfeito - score_negativo;
 
-  if (score_atual + score_aux > *score_melhor) {
-    // printf("Score atual: %d\n", score_atual);
-    // caminho_atual[indice_caminho] = (Posicao){-1, -1};
-    return;
-  }
+  if (score_atual + score_perfeito_restante > *score_melhor) return;
 
-  if (x == n - 1 && y == n - 1) {  // Chegou no final
-    // printa_caminho(n, caminho_atual);
-    // printf("Score atual: %d\n", score_atual);
+  if (x == n - 1 && y == n - 1) {       // Chegou no final
     if (score_atual < *score_melhor) {  // Achou um caminho melhor
       *score_melhor = score_atual;
-
       zera_caminho(n, caminho_melhor);
       for (int i = 0; i < n * n; i++)  // Atualiza o caminho melhor
         caminho_melhor[i] = caminho_atual[i];
@@ -391,11 +380,10 @@ void dfs(int n, int **T_int, int visitados[n][n], Posicao caminho_atual[n * n],
   }
 
   int aux_visistado[n][n];
-  for (int i = 0; i < n; i++) {
+  for (int i = 0; i < n; i++)
     for (int j = 0; j < n; j++) {
       aux_visistado[i][j] = visitados[i][j];
     }
-  }
 
   Posicao vizinhos[3];
   reseta_vizinhos(vizinhos);
@@ -446,23 +434,23 @@ int monta_caminho(int n, char *caminho, Posicao caminho_melhor[n * n]) {
 }
 
 int encontra_caminho_exato(char **T_char, int n, char *caminho) {
-  int tamanho_caminho = 0;
   int score_perfeito = 0;
   int score_melhor = INT_MAX;
 
-  Posicao caminho_atual[n * n];
-  Posicao caminho_melhor[n * n];
-  int **T_int = (int **)malloc(n * sizeof(int *));
-
-  for (int i = 0; i < n; i++) T_int[i] = (int *)malloc(n * sizeof(int));
-
-  reescreve_tabuleiro_inteiros(n, T_int, T_char);
   int visitados[n][n];
-
-  zera_caminho(n, caminho_atual);
-  zera_caminho(n, caminho_melhor);
   zera_visitados(n, visitados);
-  score_perfeito = encontra_menor_pontuacao(n, T_int);
+
+  Posicao caminho_atual[n * n];
+  zera_caminho(n, caminho_atual);
+
+  Posicao caminho_melhor[n * n];
+  zera_caminho(n, caminho_melhor);
+
+  int **T_int = (int **)malloc(n * sizeof(int *));
+  for (int i = 0; i < n; i++) T_int[i] = (int *)malloc(n * sizeof(int));
+  monta_tabuleiro_inteiros(n, T_int, T_char);
+
+  score_perfeito = encontra_pontuacao_perfeita(n, T_int);
   // imprime_tabuleiro_int(n, T_int);
 
   dfs(n, T_int, visitados, caminho_atual, 0, 0, 0, score_perfeito,
@@ -470,11 +458,9 @@ int encontra_caminho_exato(char **T_char, int n, char *caminho) {
 
   // printa_caminho(n, caminho_melhor);
 
-  tamanho_caminho = monta_caminho(n, caminho, caminho_melhor);
-
   // printf("Melhor score: %d\n", tamanho_caminho);
 
-  return tamanho_caminho;
+  return monta_caminho(n, caminho, caminho_melhor);
 }
 // ################# FIM SOLVER ########################
 // ################# INICIO MAIN #######################

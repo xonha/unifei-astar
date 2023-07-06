@@ -209,11 +209,11 @@ typedef struct {
 
 void encontra_vizinhos_diagonal(char **T, Posicao no_atual, int n,
                                 char *vizinhos) {
-  // Resetar vizinhos com I de inválido
-  for (int i = 0; i < 8; i++) vizinhos[i] = 'I';
-
   int x = no_atual.x;
   int y = no_atual.y;
+
+  for (int i = 0; i < 8; i++)
+    vizinhos[i] = 'I';  // Resetar vizinhos com I de inválido
 
   // Verificar os vizinhos em cima
   if (x - 1 >= 0) {
@@ -271,11 +271,19 @@ void monta_tabuleiro_inteiros(int n, int **T_int, char **T_char) {
   }
 }
 
-void imprime_tabuleiro_int(int n, int **tabuleiro) {
+void imprime_tabuleiro_inteiros(int n, int **tabuleiro) {
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) printf("%d ", tabuleiro[j][i]);
     printf("\n");
   }
+}
+
+void imprime_caminho(int n, Posicao caminho[n * n]) {
+  for (int i = 0; i < n * n; i++) {
+    if (caminho[i].x == -1) break;
+    printf("(%d, %d) ", caminho[i].x, caminho[i].y);
+  }
+  printf("\n");
 }
 
 int encontra_pontuacao_perfeita(int n, int **T_int) {
@@ -316,14 +324,6 @@ int calcula_score_negativo(int n, int **T_int, Posicao caminho_atual[n * n]) {
 
   if (T_int[0][0] < 0) score += T_int[0][0];
   return score;
-}
-
-void printa_caminho(int n, Posicao caminho[n * n]) {
-  for (int i = 0; i < n * n; i++) {
-    if (caminho[i].x == -1) break;
-    printf("(%d, %d) ", caminho[i].x, caminho[i].y);
-  }
-  printf("\n");
 }
 
 void zera_caminho(int n, Posicao caminho_atual[n * n]) {
